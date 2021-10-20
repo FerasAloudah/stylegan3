@@ -1,17 +1,19 @@
-import cv2 as cv
-from viz.renderer import Renderer
+import cv2
+import numpy as np
+
+import dnnlib
 from visualizer import AsyncRenderer
 
 
 class LatentWalk:
     def __init__(self, pkl=None, anim=True):
-        self.args            = dnnlib.EasyDict(w0_seeds=[], pkl=pkl)
-        self.result          = dnnlib.EasyDict()
-        self.latent          = dnnlib.EasyDict(x=0, y=0, anim=anim, speed=0.25)
-        self.step_y          = 100
+        self.args = dnnlib.EasyDict(w0_seeds=[], pkl=pkl)
+        self.result = dnnlib.EasyDict()
+        self.latent = dnnlib.EasyDict(x=0, y=0, anim=anim, speed=0.25)
+        self.step_y = 100
         self._async_renderer = AsyncRenderer()
 
-    def generate(self, dx, dy):
+    def generate(self, dx=None, dy=None):
         self.args = dnnlib.EasyDict()
         self.drag(dx, dy)
         self.walk()
@@ -24,8 +26,10 @@ class LatentWalk:
         return None
 
     def drag(self, dx, dy):
-        self.latent.x += dx / 24 * 4e-2
-        self.latent.y += dy / 24 * 4e-2
+        if dx:
+            self.latent.x += dx / 24 * 4e-2
+        if dy:
+            self.latent.y += dy / 24 * 4e-2
 
     def walk(self):
         seed = round(self.latent.x) + round(self.latent.y) * self.step_y
@@ -35,7 +39,7 @@ class LatentWalk:
         frac_y = self.latent.y - round(self.latent.y)
         self.latent.x += 0.01 - frac_x
         self.latent.y += 0.01 - frac_y
-        self.latent.x += 1 * self.latent.speed # replace 1 with time delta (curr_time - start_time)
+        self.latent.x += 1 * self.latent.speed  # replace 1 with time delta (curr_time - start_time)
 
         self.args.w0_seeds = []
         for ofs_x, ofs_y in [[0, 0], [1, 0], [0, 1], [1, 1]]:
@@ -51,12 +55,13 @@ def main():
     latent_walk = LatentWalk(pkl='')
     while True:
         img = latent_walk.generate()
-        img = numpy.zeros([5, 5, 3])
-        img[:, :, 0] = numpy.ones([5, 5]) * 64 / 255.0
-        img[:, :, 1] = numpy.ones([5, 5]) * 128 / 255.0
-        img[:, :, 2] = numpy.ones([5, 5]) * 192 / 255.0
+        img = np.zeros([5, 5, 3])
+        img[:, :, 0] = np.ones([5, 5]) * 64 / 255.0
+        img[:, :, 1] = np.ones([5, 5]) * 128 / 255.0
+        img[:, :, 2] = np.ones([5, 5]) * 192 / 255.0
         cv2.imshow("image", img)
-        cv.waitKey()
+        cv2.waitKey()
+
 
 if __name__ == '__main__':
     main()
