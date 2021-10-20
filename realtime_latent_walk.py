@@ -6,12 +6,11 @@ from visualizer import AsyncRenderer
 
 
 class LatentWalk:
-    def __init__(self, pkl=None, anim=True):
-        self.args = dnnlib.EasyDict(pkl=pkl)
-        self.result = dnnlib.EasyDict()
-        self.latent = dnnlib.EasyDict(x=0, y=0, anim=anim, speed=0.25)
-        self.step_y = 100
+    def __init__(self, pkl=None, x=0, y=0, speed=0.25, step_y=100):
         self._async_renderer = AsyncRenderer()
+        self.args = dnnlib.EasyDict(pkl=pkl)
+        self.latent = dnnlib.EasyDict(x=x, y=y, speed=speed)
+        self.step_y = 100
 
     def generate(self, dx=None, dy=None):
         self.drag(dx, dy)
