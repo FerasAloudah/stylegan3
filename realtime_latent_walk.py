@@ -53,12 +53,8 @@ class LatentWalk:
 def main():
     latent_walk = LatentWalk(pkl='')
     while True:
-        img = latent_walk.generate()
-        img = np.zeros([5, 5, 3])
-        img[:, :, 0] = np.ones([5, 5]) * 64 / 255.0
-        img[:, :, 1] = np.ones([5, 5]) * 128 / 255.0
-        img[:, :, 2] = np.ones([5, 5]) * 192 / 255.0
-        cv2.imshow("image", img)
+        image = latent_walk.generate()
+        cv2.imshow("image", image)
         cv2.waitKey()
 
 
