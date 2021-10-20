@@ -20,7 +20,7 @@ class LatentWalk:
             self._async_renderer.set_args(**self.args)
             result = self._async_renderer.get_result()
             if result is not None and 'image' in result:
-                return result
+                return result.image
 
         return None
 
