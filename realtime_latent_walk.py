@@ -21,7 +21,6 @@ class LatentWalk:
             result = self._async_renderer.get_result()
             if result is not None and 'image' in result:
                 return result.image
-
         return None
 
     def drag(self, dx, dy):
@@ -31,15 +30,8 @@ class LatentWalk:
             self.latent.y += dy / 24 * 4e-2
 
     def walk(self):
-        seed = round(self.latent.x) + round(self.latent.y) * self.step_y
-        self.latent.x = seed
-        self.latent.y = 0
-        frac_x = self.latent.x - round(self.latent.x)
-        frac_y = self.latent.y - round(self.latent.y)
-        self.latent.x += 0.01 - frac_x
-        self.latent.y += 0.01 - frac_y
-        self.latent.x += 1 * self.latent.speed  # replace 1 with time delta (curr_time - start_time)
-
+        self.latent.x += 0.06240269999999981 * self.latent.speed
+        self.latent.y += 0.05788880000000063 * self.latent.speed
         self.args.w0_seeds = []
         for ofs_x, ofs_y in [[0, 0], [1, 0], [0, 1], [1, 1]]:
             seed_x = np.floor(self.latent.x) + ofs_x
@@ -55,7 +47,7 @@ def main():
     while True:
         image = latent_walk.generate()
         cv2.imshow("image", image)
-        cv2.waitKey()
+        cv2.waitKey(2)
 
 
 if __name__ == '__main__':
