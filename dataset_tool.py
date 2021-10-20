@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-"""Tool for creating ZIP/PNG based datasets."""
+"""Tool for creating ZIP/PNG/JPG based datasets."""
 
 import functools
 import gzip
@@ -323,13 +323,15 @@ def open_dest(dest: str) -> Tuple[str, Callable[[str, Union[bytes, str]], None],
 @click.option('--max-images', help='Output only up to `max-images` images', type=int, default=None)
 @click.option('--transform', help='Input crop/resize mode', type=click.Choice(['center-crop', 'center-crop-wide']))
 @click.option('--resolution', help='Output resolution (e.g., \'512x512\')', metavar='WxH', type=parse_tuple)
+@click.option('--jpg', help='Use jpg for output images.', metavar='BOOL', type=bool, default=False, show_default=True)
 def convert_dataset(
     ctx: click.Context,
     source: str,
     dest: str,
     max_images: Optional[int],
     transform: Optional[str],
-    resolution: Optional[Tuple[int, int]]
+    resolution: Optional[Tuple[int, int]],
+    jpg: bool
 ):
     """Convert an image dataset into a dataset archive usable with StyleGAN2 ADA PyTorch.
 
@@ -406,7 +408,10 @@ def convert_dataset(
     labels = []
     for idx, image in tqdm(enumerate(input_iter), total=num_files):
         idx_str = f'{idx:08d}'
-        archive_fname = f'{idx_str[:5]}/img{idx_str}.png'
+        if jpg:
+            archive_fname = f'{idx_str[:5]}/img{idx_str}.jpg'
+        else:
+            archive_fname = f'{idx_str[:5]}/img{idx_str}.png'
 
         # Apply crop and resize.
         img = transform_image(image['img'])
@@ -437,10 +442,11 @@ def convert_dataset(
             err = [f'  dataset {k}/cur image {k}: {dataset_attrs[k]}/{cur_image_attrs[k]}' for k in dataset_attrs.keys()] # pylint: disable=unsubscriptable-object
             error(f'Image {archive_fname} attributes must be equal across all images of the dataset.  Got:\n' + '\n'.join(err))
 
-        # Save the image as an uncompressed PNG.
+        # Save the image.
+        format = 'jpeg' if jpg else 'png'
         img = PIL.Image.fromarray(img, { 1: 'L', 3: 'RGB' }[channels])
         image_bits = io.BytesIO()
-        img.save(image_bits, format='png', compress_level=0, optimize=False)
+        img.save(image_bits, format=format, compress_level=0, optimize=False)
         save_bytes(os.path.join(archive_root_dir, archive_fname), image_bits.getbuffer())
         labels.append([archive_fname, image['label']] if image['label'] is not None else None)
 
